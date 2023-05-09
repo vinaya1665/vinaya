@@ -1,0 +1,41 @@
+from typing import Union
+from fastapi import FastAPI
+import oracledb
+
+oracledb.init_oracle_client(lib_dir=r"C:\Users\vinaya.vilas.shivkar\Downloads\instantclient-basiclite-windows.x64-21.9.0.0.0dbru\instantclient_21_9")
+
+username = 'SYSTEM'
+password = 'pass'
+
+url='localhost:1521/xe'
+
+connection = oracledb.connect(user=username, password=password, dsn=url)
+
+cursor = connection.cursor()
+
+app = FastAPI()
+
+
+
+@app.get("/Table1")
+def select_from_table():
+    cursor.execute('select COUNTRYREGION,ROUND((TOTALCASES/POPULATION),4) AS PERCENTAGE FROM (select COUNTRYREGION ,POPULATION,TOTALCASES from WORLDOMETER2 WHERE POPULATION IS NOT NULL) WHERE ROWNUM <= 5 ORDER BY PERCENTAGE DESC')
+    result = cursor.fetchall()
+    return {"Ratio of Totalcases/population": result}
+
+@app.get("/Table2")
+def select_from_table():
+    cursor.execute('select COUNTRYREGION,ROUND((TOTALCASES/POPULATION),4) AS PERCENTAGE FROM (select COUNTRYREGION ,POPULATION,TOTALCASES from WORLDOMETER2 WHERE POPULATION IS NOT NULL) WHERE ROWNUM <= 5 ORDER BY PERCENTAGE DESC')
+    result = cursor.fetchall()
+    return {"Ratio of Totalcases/population": result}
+
+@app.get("/Table3")
+def select_from_table():
+    cursor.execute('select WHOREGION,TOTALDEATHS AS NUMOFDEATHES FROM WORLDOMETER2 WHERE ROWNUM <= 5 ORDER BY TOTALDEATHS DESC')
+    result = cursor.fetchall()
+    return {"Total Deaths": result}
+
+
+if __name__ == '__main__':
+    import uvicorn
+    uvicorn.run(app, host="localhost", port=8011)
